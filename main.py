@@ -1,16 +1,23 @@
 import os
 import asyncio
+import requests
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-import uvicorn
+from datetime import datetime
+
 
 # ---------- Config ----------
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", 0))
 WEBHOOK_PORT = int(os.getenv("WEBHOOK_PORT", 8080))
+UEX_BEARER_TOKEN = os.getenv("UEX_BEARER_TOKEN")
+POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", 6))  # secondi
+UEX_SECRET_KEY = "todo"                                                         # TODO da cambiare
+
+API_NOTIFICATIONS = "https://api.uexcorp.uk/2.0/user_notifications/"
+
 
 # ---------- Discord Bot ----------
 intents = discord.Intents.default()
@@ -23,6 +30,7 @@ chat_sessions = {}
 async def on_ready():
     await bot.tree.sync()  # registra i comandi slash con Discord
     print(f"✅ Bot connesso come {bot.user}")
+    poll_uex_notifications.start()  # avvia il polling
 
 # --- Slash Commands ---
 @bot.tree.command(name="lista", description="Mostra tutte le chat attive")
@@ -56,41 +64,43 @@ async def edit(interaction: discord.Interaction, id_oggetto: str, prezzo: float)
     # qui potrai collegarti alle API UEX
     await interaction.response.send_message(f"🛠️ Oggetto {id_oggetto} aggiornato con prezzo {prezzo} (mock).")
 
-# ---------- FastAPI Webhook ----------
-app = FastAPI()
+# ---------- Polling UEX ----------
+@tasks.loop(seconds=POLL_INTERVAL)
+async def poll_uex_notifications():
+    headers = {
+    "Authorization": f"Bearer {UEX_BEARER_TOKEN}",
+    "secret-key": UEX_SECRET_KEY
+}
 
-@app.post("/webhook")
-async def webhook_listener(request: Request):
-    data = await request.json()
-    print("📩 Ricevuto webhook:", data)
+    try:
+        response = requests.get(API_NOTIFICATIONS, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        notifications = data.get("data", [])
 
-    # esempio: salvo notifiche in chat_sessions
-    persona = data.get("sender", "sconosciuto")
-    oggetto = data.get("item", "N/A")
-    if persona not in chat_sessions:
-        chat_sessions[persona] = {"oggetto": oggetto, "messaggi": 0, "non_letti": 0}
-    chat_sessions[persona]["messaggi"] += 1
-    chat_sessions[persona]["non_letti"] += 1
+        if notifications:
+            channel = bot.get_channel(CHANNEL_ID)
+            for notif in notifications:
+                sender = notif.get("sender", "Sconosciuto")
+                message = notif.get("message", "")
+                redir = notif.get("redir", "")
+                obj = notif.get("object", None)
 
-    # invio su Discord
-    channel = bot.get_channel(CHANNEL_ID)
-    if channel:
-        await channel.send(f"📩 Nuovo messaggio da **{persona}** sull'oggetto **{oggetto}**")
-    return {"status": "ok"}
+                # aggiorna chat_sessions
+                if sender not in chat_sessions:
+                    chat_sessions[sender] = {"oggetto": obj, "messaggi": 0, "non_letti": 0}
+                chat_sessions[sender]["messaggi"] += 1
+                chat_sessions[sender]["non_letti"] += 1
 
-# ---------- Avvio Discord + Webhook ----------
-async def start_bot_and_webhook():
-    config = uvicorn.Config(app, host="0.0.0.0", port=WEBHOOK_PORT, log_level="info")
-    server = uvicorn.Server(config)
+                # invia su Discord
+                if channel:
+                    await channel.send(f"📩 Nuova notifica da **{sender}**: {message}\n↪️ [Dettagli]({redir})")
 
-    loop = asyncio.get_event_loop()
-    bot_task = loop.create_task(bot.start(DISCORD_TOKEN))
-    server_task = loop.create_task(server.serve())
-
-    await asyncio.wait([bot_task, server_task])
+    except requests.exceptions.RequestException as e:
+        print(f"[{datetime.now()}] Errore nel polling UEX: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(start_bot_and_webhook())
+    bot.run(DISCORD_TOKEN)
 
 
 
@@ -98,7 +108,7 @@ if __name__ == "__main__":
 ## 
 # 
 #   TODO 
-# 
+#   !- Trovare Secret-Key dal sito UEX CORP.
 #   1- Implementare lista di oggetti in vendita
 #   2- Rifattorizzare il codice in modo che sia in linea con le direttive
 #   3- Segliere Un Logo 
