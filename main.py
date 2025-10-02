@@ -1,22 +1,22 @@
 import os
-import asyncio
 import requests
 import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from datetime import datetime
+import directory
+
 
 
 # ---------- Config ----------
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", 0))
-WEBHOOK_PORT = int(os.getenv("WEBHOOK_PORT", 8080))
 UEX_BEARER_TOKEN = os.getenv("UEX_BEARER_TOKEN")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", 6))  # secondi
-UEX_SECRET_KEY = "todo"                                                         # TODO da cambiare
+UEX_SECRET_KEY = os.getenv("UEX_SECRET_KEY")                                                         
 
-API_NOTIFICATIONS = "https://api.uexcorp.uk/2.0/user_notifications/"
+
 
 
 # ---------- Discord Bot ----------
@@ -73,7 +73,7 @@ async def poll_uex_notifications():
 }
 
     try:
-        response = requests.get(API_NOTIFICATIONS, headers=headers)
+        response = requests.get(directory.API_NOTIFICATIONS, headers=headers)
         response.raise_for_status()
         data = response.json()
         notifications = data.get("data", [])
@@ -108,14 +108,15 @@ if __name__ == "__main__":
 ## 
 # 
 #   TODO 
-#   !- Trovare Secret-Key dal sito UEX CORP.
+#   
 #   1- Implementare lista di oggetti in vendita
 #   2- Rifattorizzare il codice in modo che sia in linea con le direttive
 #   3- Segliere Un Logo 
-#   4- Capire meglio funzionamento di webhook
-#   5- Capire meglio API UEX 
-#   6- Implementare nuovi comandi riguardanti chat e gestione inventario
-#   
+#   4- Capire meglio API UEX 
+#   5- Implementare nuovi comandi riguardanti chat e gestione inventario
+#   6- Implementare multigestione utenti con chiave univoca UEX Segreta 
+#       (       ogni utente ha il suo tread  
+#             deve inserire chaive per accedere a uex       )
 # 
 # 
 # 
