@@ -1,3 +1,9 @@
 .env
 test.py
 test2.py
+Procfile
+UEX Market.rar
+Test Env
+venv
+bot.log
+__pycache__
