@@ -60,7 +60,6 @@ Optional: `logging` module for debug/log files.
     DISCORD_TOKEN=your_discord_bot_token
     CHANNEL_ID=your_channel_id
     POLL_INTERVAL=6
-
 ```
 4. Run the Bot
 
@@ -79,9 +78,9 @@ Optional: `logging` module for debug/log files.
     
     Send your API credentials in your private thread:
 
-    ```bash
-        bearer:<TOKEN> secret:<SECRET>
-    ```
+```bash
+    bearer:<TOKEN> secret:<SECRET>
+```
 
 3. Receive notifications:
     
