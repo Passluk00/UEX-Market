@@ -6,13 +6,16 @@
 
 ---
 
+
 ## **Description**
+
 This Discord bot allows users to receive **real-time notifications** from UEX directly in private threads on Discord.  
 Users can create a personal thread, add their UEX API credentials, and receive notifications about messages, negotiations, and updates.
 
 Additionally, users can **reply to notifications directly from Discord**. Replies are sent back to UEX via the API, enabling two-way communication without leaving Discord.
 
 ---
+
 
 ## **Features**
 
@@ -24,6 +27,7 @@ Additionally, users can **reply to notifications directly from Discord**. Replie
 - **Bot Stats Command:** `/stats` shows active users, threads, and last polling duration.
 
 ---
+
 
 ## **Requirements**
 
@@ -38,6 +42,7 @@ Additionally, users can **reply to notifications directly from Discord**. Replie
 Optional: `logging` module for debug/log files.
 
 ---
+
 
 ## **Installation**
 
@@ -67,6 +72,8 @@ POLL_INTERVAL=6
 python bot.py
 ```
 
+---
+
 
 ## **Usage**
 
@@ -94,7 +101,9 @@ bearer:<TOKEN> secret:<SECRET>
 
 5. Check bot stats:
 
-    Use /stats to see active users, active threads, and last polling duration.
+    Use `/stats` to see active users, active threads, and last polling duration.
+
+---
 
 
 ## **Logging**
@@ -106,12 +115,16 @@ The bot logs the following to bot.log and console:
 - Replies sent
 - API errors and timeouts
 
+---
+
 
 ## **Expected Behavior**
 
 - Notifications appear almost instantly in Discord after being available in UEX.
 - Replies sent from Discord appear immediately in UEX.
 - Errors or delays are logged for troubleshooting.
+
+---
 
 
 ## **Disclaimer**
