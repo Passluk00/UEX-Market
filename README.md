@@ -1,7 +1,13 @@
 # Discord UEX Notification Bot
 
+[![Python](https://img.shields.io/badge/python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/)  
+[![discord.py](https://img.shields.io/badge/discord.py-v2.5+-blue?logo=discord&logoColor=white)](https://pypi.org/project/discord.py/)  
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-## **Description**
+---
+
+
+## ✨ Description
 
 This Discord bot allows users to receive **real-time notifications** from UEX directly in private threads on Discord.  
 Users can create a personal thread, add their UEX API credentials, and receive notifications about messages, negotiations, and updates.
@@ -11,19 +17,19 @@ Additionally, users can **reply to notifications directly from Discord**. Replie
 ---
 
 
-## **Features**
+## 🛠 Features
 
-- **Private Threads per User:** Each user gets a dedicated thread for notifications.
-- **API Credential Management:** Users input their Bearer Token and Secret Key securely.
-- **Real-Time Notification Polling:** Fetch new messages asynchronously from UEX API.
-- **Reply to Notifications:** Users reply directly in Discord; bot sends the reply via UEX API.
-- **Error Handling & Logging:** Logs include polling, notifications, replies, and API errors.
-- **Bot Stats Command:** `/stats` shows active users, threads, and last polling duration.
+- 🧵 **Private Threads per User:** Each user gets a dedicated thread for notifications.  
+- 🔑 **API Credential Management:** Users input their Bearer Token and Secret Key securely.  
+- ⏱ **Real-Time Notification Polling:** Fetch new messages asynchronously from UEX API.  
+- 💬 **Reply to Notifications:** Users reply directly in Discord; bot sends the reply via UEX API.  
+- 📋 **Error Handling & Logging:** Logs include polling, notifications, replies, and API errors.  
+- 📊 **Bot Stats Command:** `/stats` shows active users, threads, and last polling duration.
 
 ---
 
 
-## **Requirements**
+## 📦 Requirements
 
 - Python 3.11+
 - discord.py
@@ -38,7 +44,7 @@ Optional: `logging` module for debug/log files.
 ---
 
 
-## **Installation**
+## ⚙️ Installation
 
 1. Clone this repository:
 
@@ -69,7 +75,7 @@ python bot.py
 ---
 
 
-## **Usage**
+## **🚀 Usage**
 
 1. Create a thread:
 
@@ -100,7 +106,7 @@ bearer:<TOKEN> secret:<SECRET>
 ---
 
 
-## **Logging**
+## **📄 Logging**
 
 The bot logs the following to bot.log and console:
 
@@ -112,7 +118,7 @@ The bot logs the following to bot.log and console:
 ---
 
 
-## **Expected Behavior**
+## **⏱ Expected Behavior**
 
 - Notifications appear almost instantly in Discord after being available in UEX.
 - Replies sent from Discord appear immediately in UEX.
@@ -121,7 +127,7 @@ The bot logs the following to bot.log and console:
 ---
 
 
-## **Disclaimer**
+## **⚠️ Disclaimer**
 
 ⚠️ If notifications do not appear instantly in Discord, this is due to delays in the UEX API.
 The bot fetches notifications as soon as they are available from UEX, but the API may take several minutes to propagate new messages.
