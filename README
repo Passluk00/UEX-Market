@@ -28,9 +28,9 @@ Additionally, users can **reply to notifications directly from Discord**. Replie
 ## **Requirements**
 
 - Python 3.11+
-- [discord.py](https://pypi.org/project/discord.py/) v2.5+
-- [aiohttp](https://pypi.org/project/aiohttp/)
-- [python-dotenv](https://pypi.org/project/python-dotenv/)
+- discord.py
+- aiohttp
+- python-dotenv
 - Discord bot with `message_content` intent enabled
 - Discord channel ID for the “Open Thread” button
 - Access to UEX API with valid Bearer Token and Secret Key
@@ -43,27 +43,27 @@ Optional: `logging` module for debug/log files.
 
 1. Clone this repository:
 
-```bash
+```sh
     git clone <repository_url>
     cd <repository>
 ```
 
 2. Install dependencies:
 
-```bash
+```sh
     pip install -r requirements.txt
 ```
 
 3. Create a .env file in the root directory with the following:
   
-```bash
+```sh
     DISCORD_TOKEN=your_discord_bot_token
     CHANNEL_ID=your_channel_id
     POLL_INTERVAL=6
 ```
 4. Run the Bot
 
-```bash
+```sh
     python bot.py
 ```
 
@@ -78,7 +78,7 @@ Optional: `logging` module for debug/log files.
     
     Send your API credentials in your private thread:
 
-```bash
+```sh
     bearer:<TOKEN> secret:<SECRET>
 ```
 
