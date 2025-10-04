@@ -89,9 +89,7 @@ bearer:<TOKEN> secret:<SECRET>
 4. Reply to notifications:
 
    - Use Discord’s “Reply” feature on a notification embed.
-
    - Type your message.
-
    - The bot sends it to UEX automatically and confirms success.
 
 5. Check bot stats:
@@ -104,20 +102,15 @@ bearer:<TOKEN> secret:<SECRET>
 The bot logs the following to bot.log and console:
 
 - Polling start and completion per user
-
 - Notifications received
-
 - Replies sent
-
 - API errors and timeouts
 
 
 ## **Expected Behavior**
 
 - Notifications appear almost instantly in Discord after being available in UEX.
-
 - Replies sent from Discord appear immediately in UEX.
-
 - Errors or delays are logged for troubleshooting.
 
 
