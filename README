@@ -44,27 +44,27 @@ Optional: `logging` module for debug/log files.
 1. Clone this repository:
 
 ```sh
-    git clone <repository_url>
-    cd <repository>
+git clone <repository_url>
+cd <repository>
 ```
 
 2. Install dependencies:
 
 ```sh
-    pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 3. Create a .env file in the root directory with the following:
   
 ```sh
-    DISCORD_TOKEN=your_discord_bot_token
-    CHANNEL_ID=your_channel_id
-    POLL_INTERVAL=6
+DISCORD_TOKEN=your_discord_bot_token
+CHANNEL_ID=your_channel_id
+POLL_INTERVAL=6
 ```
 4. Run the Bot
 
 ```sh
-    python bot.py
+python bot.py
 ```
 
 
@@ -79,7 +79,7 @@ Optional: `logging` module for debug/log files.
     Send your API credentials in your private thread:
 
 ```sh
-    bearer:<TOKEN> secret:<SECRET>
+bearer:<TOKEN> secret:<SECRET>
 ```
 
 3. Receive notifications:
