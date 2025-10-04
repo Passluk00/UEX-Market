@@ -1,11 +1,5 @@
 # Discord UEX Notification Bot
 
-[![Python](https://img.shields.io/badge/python-3.11+-blue)](https://www.python.org/)
-[![discord.py](https://img.shields.io/badge/discord.py-v2.5+-blue)](https://pypi.org/project/discord.py/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-
----
-
 
 ## **Description**
 
@@ -48,27 +42,27 @@ Optional: `logging` module for debug/log files.
 
 1. Clone this repository:
 
-```sh
+```bash
 git clone <repository_url>
 cd <repository>
 ```
 
 2. Install dependencies:
 
-```sh
+```bash
 pip install -r requirements.txt
 ```
 
 3. Create a .env file in the root directory with the following:
   
-```sh
+```bash
 DISCORD_TOKEN=your_discord_bot_token
 CHANNEL_ID=your_channel_id
 POLL_INTERVAL=6
 ```
 4. Run the Bot
 
-```sh
+```bash
 python bot.py
 ```
 
@@ -85,7 +79,7 @@ python bot.py
     
     Send your API credentials in your private thread:
 
-```sh
+```bash
 bearer:<TOKEN> secret:<SECRET>
 ```
 
