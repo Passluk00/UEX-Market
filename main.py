@@ -96,8 +96,6 @@ class OpenThreadButton(ui.View):
         await interaction.response.send_message("✅ Thread creato! Controlla il tuo thread privato.", ephemeral=True)
 
 
-# ---------- Eventi Bot ----------
-
 @bot.event
 async def on_ready():
     global aiohttp_session
@@ -115,6 +113,25 @@ async def on_ready():
         poll_all_users.start()
 
 @bot.event
+async def on_disconnect():
+    await close_aiohttp()
+
+@bot.event
+async def on_shutdown():
+    await close_aiohttp()
+
+
+async def close_aiohttp():
+    global aiohttp_session
+    if aiohttp_session:
+        await aiohttp_session.close()
+        aiohttp_session = None
+        logging.info("🌐 Sessione aiohttp chiusa")
+
+
+
+
+@bot.event
 async def on_thread_delete(thread: discord.Thread):
     to_remove = None
     for user_id, session in user_sessions.items():
@@ -124,7 +141,6 @@ async def on_thread_delete(thread: discord.Thread):
     if to_remove:
         del user_sessions[to_remove]
         logging.info(f"🗑️ Thread eliminato, rimossa sessione per utente {to_remove}")
-
 
 @bot.event
 async def on_message(message):
@@ -157,6 +173,7 @@ async def on_message(message):
             return
 
     await bot.process_commands(message)
+
 
 # ---------- Funzione per rispondere a un messaggio UEX ----------
 @bot.event
@@ -242,11 +259,7 @@ async def on_message(message: discord.Message):
     await bot.process_commands(message)
 
 
-
-
-
-
-# ---------- FUNZIONE POLLING PER SINGOLO UTENTE (con logging dettagliato) ----------
+# ---------- FUNZIONE POLLING PER SINGOLO UTENTE (con logging dettagliato e parsing migliorato) ----------
 async def fetch_notifications(user_id, session):
     global aiohttp_session
 
@@ -287,21 +300,25 @@ async def fetch_notifications(user_id, session):
                         if any(n.get("id") == notif_id for n in session.get("notifications", [])):
                             continue
 
-                        raw_message = notif.get("message", "")
+                        raw_message = notif.get("message", "").strip()
                         redir = notif.get("redir", "")
                         notif_hash = None
 
                         if "hash/" in redir:
                             notif_hash = redir.split("hash/")[-1]
 
-                        # Parsing messaggio
+                        # --- 🔧 Parsing migliorato ---
                         if ":" in raw_message:
                             sender, text = raw_message.split(":", 1)
                             sender = sender.strip()
                             text = text.strip()
                         else:
-                            sender = "Sconosciuto"
-                            text = raw_message
+                            # Gestisce casi tipo "captmonsters ended negotiation"
+                            parts = raw_message.split(" ", 1)
+                            if len(parts) == 2 and parts[0].isalnum():
+                                sender, text = parts[0].strip(), parts[1].strip()
+                            else:
+                                sender, text = "Sconosciuto", raw_message.strip()
 
                         # Salva la notifica
                         session.setdefault("notifications", []).append({
@@ -313,7 +330,7 @@ async def fetch_notifications(user_id, session):
                         print(f"id: {notif_id}")
                         print(f"hash: {notif_hash}")
                         print(f"Message: {raw_message}")
-                        
+
                         # LOG PRIMA DELL'INVIO SU DISCORD
                         logging.info(
                             f"[{datetime.now().strftime('%H:%M:%S')}] 📨 Nuova notifica utente {user_id} - Mittente: {sender}, Messaggio: {text[:60]}..."
@@ -344,7 +361,6 @@ async def fetch_notifications(user_id, session):
             logging.error(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Polling fallito per utente {user_id} dopo {retries} tentativi.")
 
 
-
 # ---------- POLLING GLOBALE ----------
 @tasks.loop(seconds=POLL_INTERVAL)
 async def poll_all_users():
@@ -364,8 +380,6 @@ async def poll_all_users():
     elapsed = time.perf_counter() - start
     last_poll_time = elapsed
     logging.info(f"✅ Polling completato in {elapsed:.2f}s per {users_count} utenti")
-
-
 
 
 # ---------- Comando /stats ----------
