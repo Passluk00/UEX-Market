@@ -63,8 +63,7 @@ pip install -r requirements.txt
   
 ```bash
 DISCORD_TOKEN=your_discord_bot_token
-CHANNEL_ID=your_channel_id
-POLL_INTERVAL=6
+POLL_INTERVAL=6         #polling interval
 ```
 4. Run the Bot
 
