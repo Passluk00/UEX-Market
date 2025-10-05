@@ -9,3 +9,5 @@ bot.log
 __pycache__
 main Backup.py
 TODO
+user_sessions.json
+Release

@@ -25,6 +25,8 @@ Additionally, users can **reply to notifications directly from Discord**. Replie
 - 💬 **Reply to Notifications:** Users reply directly in Discord; bot sends the reply via UEX API.  
 - 📋 **Error Handling & Logging:** Logs include polling, notifications, replies, and API errors.  
 - 📊 **Bot Stats Command:** `/stats` shows active users, threads, and last polling duration.
+- 💾 **Salvataggio automatico e persistente** delle sessioni utente in `user_sessions.json`.
+- 🔁 **Recupero automatico** delle sessioni all’avvio del bot.
 
 ---
 
