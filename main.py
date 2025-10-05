@@ -8,8 +8,7 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from datetime import datetime
 import time
-import directory  # contiene API_NOTIFICATIONS
-
+import directory  # contiene ALL_API_URL
 
 
 # ---------- SESSIONE HTTP GLOBALE ----------
@@ -31,7 +30,6 @@ logging.basicConfig(
 # ---------- Config ----------
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID", 0))
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", 6))  # secondi
 
 # ---------- Discord Bot ----------
@@ -99,38 +97,22 @@ class OpenThreadButton(ui.View):
 
 
 # ---------- Eventi Bot ----------
+
 @bot.event
 async def on_ready():
-    
     global aiohttp_session
     if aiohttp_session is None:
         aiohttp_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5))
         logging.info("🌐 Sessione aiohttp inizializzata")
 
-    
     logging.info(f"✅ Bot connesso come {bot.user}")
     await bot.tree.sync()
     logging.info("✅ Commands synchronized.")
 
     bot.add_view(OpenThreadButton())
 
-    channel = bot.get_channel(CHANNEL_ID)
-    if channel:
-        async for msg in channel.history(limit=50):
-            if msg.author == bot.user and msg.components:
-                logging.info("🔘 Pulsante già presente, riassociato.")
-                break
-        else:
-            view = OpenThreadButton()
-            await channel.send(
-                "Crea la tua chat privata con UEX!\nClicca il pulsante qui sotto per avviare una conversazione personale e ricevere le tue notifiche UEX",
-                view=view
-            )
-            logging.info("🔘 Pulsante creato.")
-
     if not poll_all_users.is_running():
         poll_all_users.start()
-
 
 @bot.event
 async def on_thread_delete(thread: discord.Thread):
