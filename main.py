@@ -229,8 +229,6 @@ async def on_message(message: discord.Message):
             logging.warning(f"⚠️ Impossibile aggiornare nome thread: {e}")
 
 
-
-
         # Se non ha ancora inserito le chiavi
         if not session.get("bearer_token") or not session.get("secret_key"):
             if content.startswith("bearer:") and "secret:" in content:
@@ -396,11 +394,19 @@ async def fetch_notifications(user_id, session):
                         new_notifications += 1
 
                         await save_sessions()
+                        
+                        color = discord.Color.blue()
+                        
+                        # Regole personalizzate
+                        if sender == "UEX" and "has been approved!" in raw_message:
+                            color = discord.Color.from_rgb(0, 200, 0)  # Verde
+                        elif sender != "UEX" and "ended negotiation" in raw_message:
+                            color = discord.Color.from_rgb(220, 50, 50)  # Rosso
 
                         embed = discord.Embed(
                             title="📩 New Notification",
                             description=f"👤 **{sender}**\n💬 {text}\n🔗 [Open on UEX](https://uexcorp.space/{redir})",
-                            color=discord.Color.blue()
+                            color=color
                         )
                         await thread.send(embed=embed)
 
