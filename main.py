@@ -18,6 +18,7 @@ SAVE_INTERVAL = 600  # secondi
 
 
 # ---------- SESSIONE HTTP GLOBALE ----------
+aiohttp_lock = asyncio.Lock()
 aiohttp_session = None
 semaphore = asyncio.Semaphore(5)  # max 5 utenti in parallelo
 
@@ -217,6 +218,19 @@ async def on_message(message: discord.Message):
     if uid in user_sessions:
         session = user_sessions[uid]
 
+        # ✅ Rimuove l’indicatore verde se l’utente scrive nel thread
+        try:
+            thread = message.channel
+            if isinstance(thread, discord.Thread) and "🟩" in thread.name:
+                new_name = thread.name.replace(" 🟩", "")
+                await thread.edit(name=new_name)
+                logging.info(f"🟩 Indicatore rimosso per utente {uid}")
+        except Exception as e:
+            logging.warning(f"⚠️ Impossibile aggiornare nome thread: {e}")
+
+
+
+
         # Se non ha ancora inserito le chiavi
         if not session.get("bearer_token") or not session.get("secret_key"):
             if content.startswith("bearer:") and "secret:" in content:
@@ -295,20 +309,32 @@ async def on_message(message: discord.Message):
     await bot.process_commands(message)
 
 
-# ---------- FUNZIONE POLLING PER SINGOLO UTENTE (con logging dettagliato e parsing migliorato) ----------
+# ---------- FUNZIONE POLLING PER SINGOLO UTENTE (con gestione robusta sessione aiohttp) ----------
 async def fetch_notifications(user_id, session):
     global aiohttp_session
 
-    if not session.get("bearer_token") or not session.get("secret_key"):
-        logging.info(f"⏸️ Utente {user_id} senza credenziali, skip fetch.")
-        return
+    # ✅ Assicura che la sessione aiohttp sia attiva
+    async with aiohttp_lock:
+        if aiohttp_session is None or aiohttp_session.closed:
+            logging.warning("🌐 Sessione aiohttp non inizializzata o chiusa, la creo ora...")
+            try:
+                aiohttp_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+                logging.info("🌐 Sessione aiohttp ricreata correttamente.")
+            except Exception as e:
+                logging.error(f"❌ Errore durante la creazione della sessione aiohttp: {e}")
+                return
 
+    # ✅ Skip se mancano le credenziali
+    if not session.get("bearer_token") or not session.get("secret_key"):
+        logging.info(f"⏸️ Utente {user_id} senza credenziali, salto polling.")
+        return
 
     async with semaphore:
         thread = bot.get_channel(int(session.get("thread_id", 0)))
         if not thread:
             logging.warning(f"❌ Thread mancante per utente {user_id}, elimino la sessione.")
             user_sessions.pop(user_id, None)
+            await save_sessions()
             return
 
         headers = {
@@ -317,11 +343,16 @@ async def fetch_notifications(user_id, session):
         }
 
         retries = 3
-        for attempt in range(retries):
+        for attempt in range(1, retries + 1):
             start_time = time.perf_counter()
-            logging.info(f"[{datetime.now().strftime('%H:%M:%S')}] 🔍 Inizio polling utente {user_id} (tentativo {attempt+1})")
+            logging.info(f"[{datetime.now().strftime('%H:%M:%S')}] 🔍 Inizio polling utente {user_id} (tentativo {attempt})")
 
             try:
+                # ✅ Controlla se la sessione è ancora valida
+                if aiohttp_session.closed:
+                    logging.warning("🌐 Sessione aiohttp chiusa durante polling, ricreo...")
+                    aiohttp_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+
                 async with aiohttp_session.get(directory.API_NOTIFICATIONS, headers=headers) as resp:
                     logging.info(f"[{datetime.now().strftime('%H:%M:%S')}] 🌐 Richiesta API inviata (status={resp.status}) per utente {user_id}")
 
@@ -334,70 +365,76 @@ async def fetch_notifications(user_id, session):
                     notifications = data.get("data", [])
                     logging.info(f"[{datetime.now().strftime('%H:%M:%S')}] 📦 Ricevute {len(notifications)} notifiche per utente {user_id}")
 
+                    new_notifications = 0
                     for notif in notifications:
                         notif_id = notif.get("id")
-
-                        # Evita duplicati
                         if any(n.get("id") == notif_id for n in session.get("notifications", [])):
-                            continue
+                            continue  # evita duplicati
 
                         raw_message = notif.get("message", "").strip()
                         redir = notif.get("redir", "")
                         notif_hash = None
-
                         if "hash/" in redir:
                             notif_hash = redir.split("hash/")[-1]
 
-                        # --- 🔧 Parsing migliorato ---
+                        # 🔧 Parsing testo
                         if ":" in raw_message:
                             sender, text = raw_message.split(":", 1)
-                            sender = sender.strip()
-                            text = text.strip()
+                            sender, text = sender.strip(), text.strip()
                         else:
-                            # Gestisce casi tipo "captmonsters ended negotiation"
                             parts = raw_message.split(" ", 1)
                             if len(parts) == 2 and parts[0].isalnum():
                                 sender, text = parts[0].strip(), parts[1].strip()
                             else:
                                 sender, text = "Sconosciuto", raw_message.strip()
 
-                        # Salva la notifica
                         session.setdefault("notifications", []).append({
                             "id": notif_id,
                             "hash": notif_hash,
                             "message": raw_message
                         })
-                        
+                        new_notifications += 1
+
                         await save_sessions()
 
-                        # LOG PRIMA DELL'INVIO SU DISCORD
-                        logging.info(
-                            f"[{datetime.now().strftime('%H:%M:%S')}] 📨 Nuova notifica utente {user_id} - Mittente: {sender}, Messaggio: {text[:60]}..."
-                        )
-
-                        # Invia nel thread Discord
                         embed = discord.Embed(
-                            title="📩 Nuova notifica",
-                            description=f"👤 Mittente: **{sender}**\n💬 {text}\n🔗 [Apri su UEX](https://uexcorp.space/{redir})",
+                            title="📩 New Notification",
+                            description=f"👤 **{sender}**\n💬 {text}\n🔗 [Open on UEX](https://uexcorp.space/{redir})",
                             color=discord.Color.blue()
                         )
                         await thread.send(embed=embed)
 
-                        # LOG DOPO L'INVIO
-                        logging.info(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Messaggio inviato su Discord per utente {user_id}")
+                    # ✅ Se ci sono nuove notifiche → aggiorna nome thread
+                    if new_notifications > 0:
+                        try:
+                            if "🟩" not in thread.name:
+                                new_name = f"{thread.name} 🟩"
+                                await thread.edit(name=new_name)
+                                logging.info(f"🟩 Thread aggiornato ({new_name}) per utente {user_id}")
+                        except Exception as e:
+                            logging.warning(f"⚠️ Impossibile rinominare thread {thread.id}: {e}")
 
                     elapsed = time.perf_counter() - start_time
-                    logging.info(f"[{datetime.now().strftime('%H:%M:%S')}] ⏱️ Polling utente {user_id} completato in {elapsed:.2f}s")
-                    return  # success
+                    logging.info(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Polling utente {user_id} completato in {elapsed:.2f}s")
+                    return  # ✅ completato con successo
+
+            except aiohttp.ClientConnectionError:
+                logging.warning(f"🌐 Connessione chiusa per utente {user_id}, ricreo la sessione...")
+                try:
+                    aiohttp_session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+                except Exception as e:
+                    logging.error(f"❌ Errore durante la ricreazione della sessione aiohttp: {e}")
+                await asyncio.sleep(1)
 
             except asyncio.TimeoutError:
-                logging.warning(f"[{datetime.now().strftime('%H:%M:%S')}] ⏳ Timeout API UEX per utente {user_id} (tentativo {attempt+1}/{retries})")
+                logging.warning(f"[{datetime.now().strftime('%H:%M:%S')}] ⏳ Timeout per utente {user_id} (tentativo {attempt}/{retries})")
                 await asyncio.sleep(1)
+
             except Exception as e:
                 logging.exception(f"[{datetime.now().strftime('%H:%M:%S')}] 💥 Errore polling utente {user_id}: {e}")
                 await asyncio.sleep(1)
-        else:
-            logging.error(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Polling fallito per utente {user_id} dopo {retries} tentativi.")
+
+        logging.error(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Polling fallito per utente {user_id} dopo {retries} tentativi.")
 
 
 # ---------- POLLING GLOBALE ----------
