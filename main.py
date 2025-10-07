@@ -257,6 +257,12 @@ async def on_message(message: discord.Message):
         if message.reference and message.reference.resolved:
             replied_msg = message.reference.resolved
 
+             # ✅ Esegui solo se si sta rispondendo a un messaggio del bot
+            if not replied_msg.author.bot:
+                # Ignora risposte tra utenti, lascia passare al resto del bot normalmente
+                await bot.process_commands(message)
+                return
+
             # Trova l'hash nel messaggio originale (presente nel link embed)
             embed = replied_msg.embeds[0] if replied_msg.embeds else None
             if embed and embed.description and "https://uexcorp.space/" in embed.description:
