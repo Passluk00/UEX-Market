@@ -9,11 +9,12 @@
 
 ## ✨ Description
 
-This Discord bot allows users to receive **real-time notifications** from UEX directly in private threads on Discord.  
-Users can create a personal thread, add their UEX API credentials, and receive notifications about messages, negotiations, and updates.
+The Discord UEX Notification Bot connects your UEX account directly with Discord, allowing users to receive real-time negotiation updates and exchange messages seamlessly.
 
-Additionally, users can **reply to notifications directly from Discord**. Replies are sent back to UEX via the API, enabling two-way communication without leaving Discord.
+Each user has a private thread where the bot delivers negotiation messages, listings updates, and system notifications.
+Users can also reply directly from Discord, and the bot automatically sends their message back to UEX via webhook.
 
+This version includes a database system, real-time webhook handling, negotiation linking between users.
 ---
 
 
@@ -21,26 +22,31 @@ Additionally, users can **reply to notifications directly from Discord**. Replie
 
 - 🧵 **Private Threads per User:** Each user gets a dedicated thread for notifications.  
 - 🔑 **API Credential Management:** Users input their Bearer Token and Secret Key securely.  
-- ⏱ **Real-Time Notification Polling:** Fetch new messages asynchronously from UEX API.  
-- 💬 **Reply to Notifications:** Users reply directly in Discord; bot sends the reply via UEX API.  
-- 📋 **Error Handling & Logging:** Logs include polling, notifications, replies, and API errors.  
+- 🔗 **Webhook-Driven Communication:** Receives and processes UEX webhooks instantly — no polling delays.
+- 🧠 **Negotiation Link Mapping:** Automatically links buyers and sellers using the negotiation hash to enable two-way messaging.
+- 💬 **Two-Way Messaging:** Messages from either side of a negotiation are routed to the other user in real-time.
+- 🧾 **Persistent SQLite Database:** Stores user sessions, negotiation links, and webhook data in a local SQLite database.
+- ⚙️ **Automatic Session Recovery:** On restart, the bot restores active user sessions and linked negotiations.
+- 📊 **Logging & Debugging:** Detailed logs for every webhook event, negotiation start/end, and message transfer.
+- 🧠 **Smart Negotiation Routing:** Automatically determines the correct recipient (buyer/seller) for each reply based on stored negotiation data. 
+- 📋 **Error Handling:** Logs include polling, notifications, replies, and API errors.  
 - 📊 **Bot Stats Command:** `/stats` shows active users, threads, and last polling duration.
-- 💾 **Automatically save and persist** user sessions in `user_sessions.json`.
-- 🔁 **Automatically restore** sessions when the bot starts.
+
 ---
 
+## 🧰 Tech Stack
 
-## 📦 Requirements
 
-- Python 3.11+
-- discord.py
-- aiohttp
-- python-dotenv
-- Discord bot with `message_content` intent enabled
-- Discord channel ID for the “Open Thread” button
-- Access to UEX API with valid Bearer Token and Secret Key
+| Component                  | Technology                         |
+| -------------------------- | ---------------------------------- |
+| **Language**               | Python 3.11+                       |
+| **Discord SDK**            | discord.py v2.5+                   |
+| **Async HTTP**             | aiohttp                            |
+| **Database**               | aiosqlite (SQLite)                 |
+| **Environment Management** | python-dotenv                      |
+| **Hosting / Gateway**      | Nginx + FastAPI (Webhook Endpoint) |
+| **Translation (optional)** | DeepL / Google Translate API       |
 
-Optional: `logging` module for debug/log files.
 
 ---
 
@@ -50,8 +56,8 @@ Optional: `logging` module for debug/log files.
 1. Clone this repository:
 
 ```bash
-git clone <repository_url>
-cd <repository>
+git clone https://github.com/Passluk00/UEX-Market.git/ 
+cd UexBot 
 ```
 
 2. Install dependencies:
@@ -64,6 +70,9 @@ pip install -r requirements.txt
   
 ```bash
 DISCORD_TOKEN=your_discord_bot_token
+DB_PATH=your_database_path
+LOG_PATH=your_log_path
+TUNNEL_URL=             #public ip or url
 POLL_INTERVAL=6         #polling interval
 ```
 4. Run the Bot
@@ -77,16 +86,25 @@ python bot.py
 
 ## **🚀 Usage**
 
-1. Create a thread:
+0. Add the Button to a Channel
+
+   Type this command to add a button to a specific channel
+
+   ```bash
+   /add channel_name  
+   ```
+
+
+2. Create a thread:
 
     Click the “Open Thread” button in the configured Discord channel.
 
-2. Add credentials:
+3. Add credentials:
     
     Send your API credentials in your private thread:
 
 ```bash
-bearer:<TOKEN> secret:<SECRET>
+bearer:<TOKEN> secret:<SECRET> username:<uex_username>
 ```
 
 3. Receive notifications:
