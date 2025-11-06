@@ -45,7 +45,6 @@ This version includes a database system, real-time webhook handling, negotiation
 | **Database**               | aiosqlite (SQLite)                 |
 | **Environment Management** | python-dotenv                      |
 | **Hosting / Gateway**      | Nginx + FastAPI (Webhook Endpoint) |
-| **Translation (optional)** | DeepL / Google Translate API       |
 
 
 ---
@@ -55,31 +54,32 @@ This version includes a database system, real-time webhook handling, negotiation
 
 1. Clone this repository:
 
-```bash
-git clone https://github.com/Passluk00/UEX-Market.git/ 
-cd UexBot 
-```
+  ```bash
+  git clone https://github.com/Passluk00/UEX-Market.git/ 
+  cd UEX-Market 
+  ```
 
 2. Install dependencies:
 
-```bash
-pip install -r requirements.txt
-```
+  ```bash
+  pip install -r requirements.txt
+  ```
 
 3. Create a .env file in the root directory with the following:
   
-```bash
-DISCORD_TOKEN=your_discord_bot_token
-DB_PATH=your_database_path
-LOG_PATH=your_log_path
-TUNNEL_URL=             #public ip or url
-POLL_INTERVAL=6         #polling interval
-```
+  ```bash
+  DISCORD_TOKEN=your_discord_bot_token
+  DB_PATH=your_database_path
+  LOG_PATH=your_log_path
+  TUNNEL_URL=             #public ip or url
+  POLL_INTERVAL=6         #polling interval
+  ```
+
 4. Run the Bot
 
-```bash
-python bot.py
-```
+  ```bash
+  python bot.py
+  ```
 
 ---
 
@@ -103,9 +103,9 @@ python bot.py
     
     Send your API credentials in your private thread:
 
-```bash
-bearer:<TOKEN> secret:<SECRET> username:<uex_username>
-```
+    ```bash
+    bearer:<TOKEN> secret:<SECRET> username:<uex_username>
+    ```
 
 3. Receive notifications:
     
@@ -148,4 +148,4 @@ The bot logs the following to bot.log and console:
 ## **⚠️ Disclaimer**
 
 ⚠️ If notifications do not appear instantly in Discord, this is due to delays in the UEX API.
-The bot fetches notifications as soon as they are available from UEX, but the API may take several minutes to propagate new messages.
+The bot get notifications as soon as they are available from UEX, but the API may take several minutes to propagate new messages.
