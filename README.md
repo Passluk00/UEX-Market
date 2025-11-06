@@ -6,6 +6,7 @@
 
 ---
 
+
 ## ✨ Description
 
 The Discord UEX Notification Bot connects your UEX account directly with Discord, allowing users to receive real-time negotiation updates and exchange messages seamlessly.
@@ -16,6 +17,7 @@ Users can also reply directly from Discord, and the bot automatically sends thei
 This version includes a database system, real-time webhook handling, negotiation linking between users.
 
 ---
+
 
 ## 🛠 Features
 
@@ -32,6 +34,7 @@ This version includes a database system, real-time webhook handling, negotiation
 - 📊 **Bot Stats Command:** `/stats` shows active users, threads, and last polling duration.
 
 ---
+
 
 ## 🧰 Tech Stack
 
