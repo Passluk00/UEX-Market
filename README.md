@@ -121,7 +121,7 @@ This version includes a database system, real-time webhook handling, negotiation
 
 5. Check bot stats:
 
-    Use `/stats` to see active users, active threads, and last polling duration.
+    Use `/stats` to see active users, active threads.
 
 ---
 
